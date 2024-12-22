@@ -12,7 +12,11 @@ import { addCurrency } from '../../utils/addCurrency';
 
 const OrderListsPage = () => {
   const { data: orders, isLoading, error } = useGetOrdersQuery();
-  const { userInfo } = useSelector(state => state.auth);
+  const { userInfo } = useSelector((state) => state.auth);
+
+  // Filter out only invalid/null orders
+  const validOrders = orders?.filter((order) => order && order.user);
+
   return (
     <>
       <Meta title={'Order List'} />
@@ -20,11 +24,11 @@ const OrderListsPage = () => {
       {isLoading ? (
         <Loader />
       ) : error ? (
-        <Message variant='danger'>
+        <Message variant="danger">
           {error?.data?.message || error.error}
         </Message>
-      ) : (
-        <Table striped hover bordered responsive size='sm'>
+      ) : validOrders?.length > 0 ? (
+        <Table striped hover bordered responsive size="sm">
           <thead>
             <tr>
               <th>ID</th>
@@ -37,9 +41,9 @@ const OrderListsPage = () => {
             </tr>
           </thead>
           <tbody>
-            {orders?.map(order => (
+            {validOrders.map((order) => (
               <tr key={order._id}>
-                <td>{order.user._id}</td>
+                <td>{order._id}</td>
                 <td>{order.user.name}</td>
                 <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                 <td>{addCurrency(order.totalPrice)}</td>
@@ -65,7 +69,7 @@ const OrderListsPage = () => {
                         : `/order/${order._id}`
                     }
                   >
-                    <Button className='btn-sm'  variant='info'>
+                    <Button className="btn-sm" variant="info">
                       Details
                     </Button>
                   </LinkContainer>
@@ -74,6 +78,8 @@ const OrderListsPage = () => {
             ))}
           </tbody>
         </Table>
+      ) : (
+        <Message>No orders found.</Message>
       )}
     </>
   );
